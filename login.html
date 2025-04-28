@@ -301,8 +301,12 @@
         </div>
     </div>
 
+    <script src="js/fileStorage.js"></script>
+    <script src="js/serverEmulator.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the server emulator
+            ServerEmulator.init();
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
             const showRegister = document.getElementById('showRegister');
@@ -328,42 +332,53 @@
             });
 
             // Handle login
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const username = document.getElementById('loginUsername').value.trim();
                 const password = document.getElementById('loginPassword').value;
 
-                // Get user data from localStorage
-                const users = JSON.parse(localStorage.getItem('amadeus_users')) || [];
-                const user = users.find(u => u.username === username && u.password === password);
+                // Disable form during login attempt
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Logging in...';
 
-                if (user) {
-                    // Login successful
-                    successMessage.textContent = `Welcome back, Lab Member ${user.displayName}!`;
-                    successMessage.style.display = 'block';
-                    errorMessage.style.display = 'none';
+                try {
+                    // Attempt to login via server emulator
+                    const result = await ServerEmulator.login(username, password);
 
-                    // Save current user info to session
-                    sessionStorage.setItem('currentUser', JSON.stringify({
-                        username: user.username,
-                        displayName: user.displayName,
-                        labMemberNumber: user.labMemberNumber
-                    }));
+                    if (result.success) {
+                        // Login successful
+                        successMessage.textContent = `Welcome back, Lab Member ${result.user.displayName}!`;
+                        successMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
 
-                    // Delay redirect to main page
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1500);
-                } else {
-                    // Login failed
-                    errorMessage.textContent = 'Incorrect Lab Member ID or password!';
+                        // Save current user info to session
+                        sessionStorage.setItem('currentUser', JSON.stringify(result.user));
+
+                        // Delay redirect to main page
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        // Login failed
+                        errorMessage.textContent = result.message || 'Incorrect Lab Member ID or password!';
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorMessage.textContent = 'An error occurred during login. Please try again.';
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
+                } finally {
+                    // Re-enable form
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login to System';
                 }
             });
 
             // Handle registration
-            registerForm.addEventListener('submit', function(e) {
+            registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const username = document.getElementById('registerUsername').value.trim();
                 const displayName = document.getElementById('registerDisplayName').value.trim();
@@ -378,49 +393,55 @@
                     return;
                 }
 
-                // Get user data from localStorage
-                let users = JSON.parse(localStorage.getItem('amadeus_users')) || [];
+                // Disable form during registration attempt
+                const submitBtn = registerForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Registering...';
 
-                // Check if username already exists
-                if (users.some(u => u.username === username)) {
-                    errorMessage.textContent = 'This Lab Member ID is already in use!';
+                try {
+                    // Create new user object
+                    const newUser = {
+                        username: username,
+                        displayName: displayName,
+                        password: password,
+                        registeredAt: new Date().toISOString()
+                    };
+
+                    // Attempt to register via server emulator
+                    const result = await ServerEmulator.register(newUser);
+
+                    if (result.success) {
+                        // Registration successful
+                        const labMemberNumber = result.user.labMemberNumber;
+
+                        // Show success message
+                        successMessage.textContent = `Registration successful! Your Lab Member number is #${labMemberNumber}`;
+                        successMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
+
+                        // Save current user info to session
+                        sessionStorage.setItem('currentUser', JSON.stringify(result.user));
+
+                        // Delay redirect to main page
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    } else {
+                        // Registration failed
+                        errorMessage.textContent = result.message || 'Registration failed. Please try again.';
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    errorMessage.textContent = 'An error occurred during registration. Please try again.';
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
-                    return;
+                } finally {
+                    // Re-enable form
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register as Lab Member';
                 }
-
-                // Generate Lab Member number (starting from 001)
-                const labMemberNumber = (users.length + 1).toString().padStart(3, '0');
-
-                // Create new user
-                const newUser = {
-                    username: username,
-                    displayName: displayName,
-                    password: password,
-                    labMemberNumber: labMemberNumber,
-                    registeredAt: new Date().toISOString()
-                };
-
-                // Add to user list and save
-                users.push(newUser);
-                localStorage.setItem('amadeus_users', JSON.stringify(users));
-
-                // Show success message
-                successMessage.textContent = `Registration successful! Your Lab Member number is #${labMemberNumber}`;
-                successMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-
-                // Save current user info to session
-                sessionStorage.setItem('currentUser', JSON.stringify({
-                    username: newUser.username,
-                    displayName: newUser.displayName,
-                    labMemberNumber: newUser.labMemberNumber
-                }));
-
-                // Delay redirect to main page
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
             });
         });
     </script>
