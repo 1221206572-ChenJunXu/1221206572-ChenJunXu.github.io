@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<style>
+
+:root {
+    --primary-color: #cc9d50;    /* Bright orange/amber */
+    --secondary-color: #8b4513;  /* Deep brown */
+    --dark-bg: #1a0f0f;         /* Dark brown-black background */
+    --medium-bg: #2a1f1f;       /* Medium depth background */
+    --light-bg: #3a2f2f;        /* Lighter background */
+    --text-color: #afaea5;      /* Golden text */
+    --accent-color: #ffa500;    /* Orange accent */
+    --terminal-bg: rgba(26, 15, 15, 0.9); /* Semi-transparent terminal background */
+    --glow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color); /* Glow effect */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: var(--dark-bg); /* Keep background color as fallback */
+    color: var(--text-color);
+    line-height: 1.6;
+    /* Removed original background image setting
+    background-image:
+        linear-gradient(rgba(15, 17, 18, 0.97), rgba(15, 17, 18, 0.97)),
+        url('../img/circuit-pattern.png');
+    background-attachment: fixed;
+    */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Video background styles */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.video-background video {
+    position: absolute;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    opacity: 0.4; /* Adjust opacity so video isn't too distracting */
+}
+
+.video-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 17, 18, 0.5); /* Add dark overlay */
+}
+
+/* Header Styles */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.divergence-meter {
+    display: flex;
+    margin-right: 15px;
+    background: var(--medium-bg);
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--secondary-color);
+}
+
+.digit {
+    display: inline-block;
+    background-color: var(--dark-bg);
+    color: var(--primary-color);
+    padding: 3px 5px;
+    margin: 0 2px;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: var(--glow);
+    border: 1px solid var(--secondary-color);
+}
+
+h1 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 2px var(--primary-color);
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--text-color);
+    font-weight: normal;
+}
+
+.lab-member {
+    text-align: right;
+}
+
+.member-badge {
+    display: inline-block;
+    background-color: var(--secondary-color);
+    color: var(--accent-color);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.logout-btn {
+    background-color: var(--medium-bg);
+    color: var(--text-color);
+    border: 1px solid var(--secondary-color);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+    margin-left: auto;
+}
+
+.logout-btn:hover {
+    background-color: var(--secondary-color);
+    color: var(--accent-color);
+    border-color: var(--primary-color);
+}
+
+/* Amadeus Interface Styles */
+.amadeus-container {
+    margin-bottom: 40px;
+}
+
+.amadeus-interface {
+    background-color: var(--medium-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 15px rgba(10, 173, 67, 0.2);
+}
+
+.amadeus-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--secondary-color);
+    padding: 10px 20px;
+}
+
+.amadeus-icon {
+    width: 30px;
+    height: 30px;
+    background-image: url('img/amadeus-icon.jpg');
+    background-size: cover;
+    margin-right: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.amadeus-header h2 {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+}
+
+.status {
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
+.status.online {
+    color: var(--primary-color);
+}
+
+.amadeus-display {
+    background-color: var(--terminal-bg);
+    padding: 20px;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.terminal-output {
+    font-family: 'Roboto Mono', monospace;
+}
+
+.log-entry {
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 2px solid var(--primary-color);
+    animation: fadeIn 0.3s ease;
+    position: relative;
+}
+
+.delete-log {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.delete-log:hover {
+    color: var(--accent-color);
+    opacity: 1;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.timestamp {
+    color: var(--accent-color);
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+.message {
+    color: var(--text-color);
+}
+
+.amadeus-input {
+    display: flex;
+    padding: 15px;
+    background-color: var(--light-bg);
+}
+
+#logInput {
+    flex-grow: 1;
+    background-color: var(--medium-bg);
+    border: 1px solid var(--secondary-color);
+    color: var(--text-color);
+    padding: 10px;
+    font-family: 'Roboto Mono', monospace;
+    resize: none;
+    height: 80px;
+    border-radius: 5px;
+}
+
+#logInput:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.submit-btn {
+    background-color: var(--primary-color);
+    color: var(--dark-bg);
+    border: none;
+    padding: 0 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+/* Log Archive Styles */
+.log-archive {
+    background-color: var(--medium-bg);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--secondary-color);
+}
+
+.log-archive h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.log-archive h3 i {
+    margin-right: 10px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.search-input, #dateFilter {
+    padding: 8px 12px;
+    background-color: var(--dark-bg);
+    border: 1px solid var(--secondary-color);
+    color: var(--text-color);
+    border-radius: 5px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.search-input {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.search-input:focus, #dateFilter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.log-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.log-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-list::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+    border-radius: 4px;
+}
+
+.log-list::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 4px;
+}
+
+.log-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+.date-group {
+    margin-bottom: 20px;
+}
+
+.date-header {
+    color: var(--accent-color);
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--secondary-color);
+    font-size: 1rem;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    padding-top: 20px;
+    border-top: 1px solid var(--secondary-color);
+}
+
+.divergence {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-shadow: 0 0 2px var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lab-member {
+        margin-top: 15px;
+        text-align: left;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+    }
+
+    .amadeus-display {
+        height: 300px;
+    }
+}
+
+</style>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Member Assistant - Future Gadget Laboratory</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay loop muted playsinline>
+            <source src="video/background.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="divergence-meter">
+                    <span class="digit">1</span>
+                    <span class="digit">.</span>
+                    <span class="digit">0</span>
+                    <span class="digit">4</span>
+                    <span class="digit">8</span>
+                    <span class="digit">5</span>
+                    <span class="digit">9</span>
+                    <span class="digit">6</span>
+                </div>
+                <h1>Future Gadget Laboratory <span class="subtitle">AI Experiment Log</span></h1>
+            </div>
+            <div class="lab-member">
+                <div class="member-badge" id="labMemberBadge">Lab Member #???</div>
+                <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="amadeus-container">
+            <div class="amadeus-interface">
+                <div class="amadeus-header">
+                    <div class="amadeus-icon"></div>
+                    <h2>Amadeus System <span class="status online">● ONLINE</span></h2>
+                </div>
+                <div class="amadeus-display">
+                    <div class="terminal-output" id="logDisplay">
+                        <div class="log-entry">
+                            <span class="timestamp">2025-04-28 12:00:00</span>
+                            <span class="message">Amadeus system initialization complete. Divergence ratio: 1.048596%. Awaiting Lab Member authentication...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="amadeus-input">
+                    <textarea id="logInput" placeholder="Enter new experiment log..."></textarea>
+                    <button id="submitLog" class="submit-btn"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-archive">
+            <h3><i class="fas fa-archive"></i> Historical Log Archive</h3>
+            <div class="filter-controls">
+                <input type="text" id="searchFilter" placeholder="Search logs..." class="search-input">
+                <div class="date-filter">
+                    <label for="dateFilter">Filter by date:</label>
+                    <input type="date" id="dateFilter">
+                </div>
+            </div>
+            <div class="log-list" id="logArchive">
+                <!-- Log entries will be dynamically generated here -->
+            </div>
+        </div>
+
+        <footer>
+            <p>El Psy Kongroo - Steins;Gate World Line: <span class="divergence">1.048596</span></p>
+            <p>© 2025 Future Gadget Laboratory | <small>This is the choice of Steins;Gate</small></p>
+        </footer>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+    if (!currentUser) {
+        // Not logged in, redirect to login page
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Element selection
+    const logInput = document.getElementById('logInput');
+    const submitLog = document.getElementById('submitLog');
+    const logDisplay = document.getElementById('logDisplay');
+    const logArchive = document.getElementById('logArchive');
+    const searchFilter = document.getElementById('searchFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const labMemberBadge = document.getElementById('labMemberBadge');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Display user information
+    labMemberBadge.textContent = `Lab Member #${currentUser.labMemberNumber} - ${currentUser.displayName}`;
+
+    // Handle logout
+    logoutBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to log out of the system?')) {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Load current user's logs from local storage
+    const allLogs = JSON.parse(localStorage.getItem('amadeus_logs')) || {};
+    let logs = allLogs[currentUser.username] || [];
+
+    // Initialize display
+    updateLogDisplay();
+    updateLogArchive();
+
+    // Add new log
+    submitLog.addEventListener('click', function() {
+        addNewLog();
+    });
+
+    // Send on Enter key (Ctrl+Enter for new line)
+    logInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.ctrlKey) {
+            e.preventDefault();
+            addNewLog();
+        }
+    });
+
+    // Search filtering
+    searchFilter.addEventListener('input', updateLogArchive);
+    dateFilter.addEventListener('change', updateLogArchive);
+
+    // Function to add new log
+    function addNewLog() {
+        const message = logInput.value.trim();
+
+        if (message) {
+            const now = new Date();
+            const timestamp = formatDate(now);
+
+            const newLog = {
+                timestamp: timestamp,
+                date: now.toISOString().split('T')[0],  // YYYY-MM-DD
+                message: message,
+                username: currentUser.username,
+                displayName: currentUser.displayName
+            };
+
+            // 添加到数组
+            logs.unshift(newLog);
+
+            // 更新本地存储
+            allLogs[currentUser.username] = logs;
+            localStorage.setItem('amadeus_logs', JSON.stringify(allLogs));
+
+            // 更新显示
+            updateLogDisplay();
+            updateLogArchive();
+
+            // 清空输入框
+            logInput.value = '';
+        }
+    }
+
+    // Update terminal display
+    function updateLogDisplay() {
+        logDisplay.innerHTML = '';
+
+        // Only show the 10 most recent logs
+        const recentLogs = logs.slice(0, 10);
+
+        recentLogs.forEach(log => {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="timestamp">${log.timestamp}</span>
+                <span class="message">${escapeHTML(log.message)}</span>
+            `;
+            logDisplay.appendChild(logEntry);
+        });
+
+        if (logs.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'log-entry';
+            emptyMessage.innerHTML = `
+                <span class="timestamp">${formatDate(new Date())}</span>
+                <span class="message">Welcome to the Amadeus system, ${currentUser.displayName}. Please enter a log...</span>
+            `;
+            logDisplay.appendChild(emptyMessage);
+        }
+    }
+
+    // Update archive display
+    function updateLogArchive() {
+        const searchTerm = searchFilter.value.toLowerCase();
+        const dateValue = dateFilter.value;
+
+        // Filter logs
+        const filteredLogs = logs.filter(log => {
+            const matchesSearch = log.message.toLowerCase().includes(searchTerm);
+            const matchesDate = !dateValue || log.date === dateValue;
+            return matchesSearch && matchesDate;
+        });
+
+        // Clear and repopulate the archive list
+        logArchive.innerHTML = '';
+
+        if (filteredLogs.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'log-entry';
+            emptyMessage.innerHTML = '<span class="message">No matching log entries found</span>';
+            logArchive.appendChild(emptyMessage);
+            return;
+        }
+
+        // Group display by date
+        const groupedLogs = {};
+        filteredLogs.forEach(log => {
+            if (!groupedLogs[log.date]) {
+                groupedLogs[log.date] = [];
+            }
+            groupedLogs[log.date].push(log);
+        });
+
+        // Sort dates and render
+        Object.keys(groupedLogs)
+            .sort((a, b) => new Date(b) - new Date(a))
+            .forEach(date => {
+                const dateGroup = document.createElement('div');
+                dateGroup.className = 'date-group';
+
+                const dateHeader = document.createElement('h4');
+                dateHeader.className = 'date-header';
+                dateHeader.textContent = formatDateHeader(date);
+                dateGroup.appendChild(dateHeader);
+
+                groupedLogs[date].forEach(log => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    logEntry.innerHTML = `
+                        <span class="timestamp">${log.timestamp.split(' ')[1]}</span>
+                        <span class="message">${escapeHTML(log.message)}</span>
+                    `;
+
+                    // Add delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-log';
+                    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteBtn.title = "Delete this log";
+                    deleteBtn.onclick = function() {
+                        deleteLog(log);
+                    };
+                    logEntry.appendChild(deleteBtn);
+
+                    dateGroup.appendChild(logEntry);
+                });
+
+                logArchive.appendChild(dateGroup);
+            });
+    }
+
+    // Delete log
+    function deleteLog(logToDelete) {
+        if (confirm('Are you sure you want to delete this log?')) {
+            logs = logs.filter(log =>
+                log.timestamp !== logToDelete.timestamp ||
+                log.message !== logToDelete.message
+            );
+
+            // Update local storage
+            allLogs[currentUser.username] = logs;
+            localStorage.setItem('amadeus_logs', JSON.stringify(allLogs));
+
+            updateLogDisplay();
+            updateLogArchive();
+        }
+    }
+
+    // Helper function: Format date
+    function formatDate(date) {
+        const pad = num => num.toString().padStart(2, '0');
+
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Helper function: Format date header
+    function formatDateHeader(dateString) {
+        const date = new Date(dateString);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    // Helper function: HTML escape
+    function escapeHTML(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/\n/g, '<br>');
+    }
+
+    // Auto-update date/time every 60 seconds (for display effect)
+    setInterval(() => {
+        const digitElements = document.querySelectorAll('.divergence-meter .digit');
+        digitElements.forEach(digit => {
+            digit.style.animation = 'none';
+            setTimeout(() => {
+                digit.style.animation = '';
+            }, 10);
+        });
+    }, 60000);
+
+    // Add Amadeus AI welcome message
+    setTimeout(() => {
+        const welcomeMessage = document.createElement('div');
+        welcomeMessage.className = 'log-entry';
+        welcomeMessage.innerHTML = `
+            <span class="timestamp">${formatDate(new Date())}</span>
+            <span class="message">Lab Member #${currentUser.labMemberNumber} ${currentUser.displayName} authentication successful. I am the Amadeus AI system, built on Kurisu Makise's memories and personality. World line divergence stable at 1.048596%. El Psy Kongroo.</span>
+        `;
+        logDisplay.appendChild(welcomeMessage);
+
+        // Add second message
+        setTimeout(() => {
+            const secondMessage = document.createElement('div');
+            secondMessage.className = 'log-entry';
+            secondMessage.innerHTML = `
+                <span class="timestamp">${formatDate(new Date())}</span>
+                <span class="message">Please record your experiment data and observations. All records will be saved in the current world line.</span>
+            `;
+            logDisplay.appendChild(secondMessage);
+        }, 3000);
+    }, 2000);
+});
+
+</script>
